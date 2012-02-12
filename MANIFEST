@@ -1,16 +1,17 @@
 Build.PL
-Makefile.PL # Will be created by "perl Build.PL"
 Changes
+LICENSE
 MANIFEST
 MANIFEST.SKIP
-META.yml # Will be created by "make dist"
+META.yml
+OldChanges
 README
-TODO
+README.mkdn
 lib/Text/NeatTemplate.pm
-t/00_dist.t
+t/00-compile.t
 t/01_load.t
-t/02_pod.t
-t/03_pod-coverage.t
-t/pod-coverage.t
-t/pod.t
-
+t/release-distmeta.t
+t/release-has-version.t
+t/release-pod-coverage.t
+t/release-pod-syntax.t
+t/release-portability.t

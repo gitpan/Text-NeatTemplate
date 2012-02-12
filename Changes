@@ -1,24 +1,34 @@
-Revision history for Text-NeatTemplate
+Revision History for Text-NeatTemplate
 ======================================
 
-0.08 Mon 21 August 2006
------------------------
+v0.10 2012-02-12
+----------------
 
-  * (21 Aug 2006) renaming module
-  	I renamed this from "Swift" to "Neat" because it probably isn't
-  as fast as Template::Trivial, and I don't want to be misleading.
+* 2012-02-12 21:23:09 +1100
+  tweaking MANIFEST.SKIP
+* 2012-02-12 21:19:24 +1100
+  Updated the docs with the new formats.
+* 2012-02-12 20:51:24 +1100
+  Changing over to Dist::Zilla.
+* 2012-02-06 23:29:45 +1100
+  more format options
+* 2012-02-06 01:58:53 +1100
+  adding a bunch more formatting options
+* 2009-12-20 18:45:12 +1100
+  enable varnames to have dashes
+* 2009-12-06 16:19:21 +1100
+  git ignore generated dist files
+* 2009-12-06 16:17:16 +1100
+  added get_varnames method
+* 2007-12-16 09:05:15 +0000
+  revamped depot
 
-  * (21 Aug 2006) documentation changes
-  	This is really a middleweight engine, not a lightweight one.
+v0.08 2009-11-27
+----------------
 
-0.0701 Sat 19 August 2006
--------------------------
+* 2007-12-16 09:05:15 +0000
+  revamped depot
 
-  * (19 Aug 2006) correction
-  	Needed to fix up the change log.
-
-0.07 Sat 19 August 2006
------------------------
-
-  * (19 Aug 2006) initial checkin
-  	Now a separate module; originally was part of SQLite::Work modules.
+====================================
+End of changes in the last 1000 days
+====================================

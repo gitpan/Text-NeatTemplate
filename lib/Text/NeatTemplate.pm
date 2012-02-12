@@ -1,4 +1,7 @@
 package Text::NeatTemplate;
+{
+  $Text::NeatTemplate::VERSION = '0.10';
+}
 use strict;
 use warnings;
 
@@ -8,11 +11,7 @@ Text::NeatTemplate - a fast, middleweight template engine.
 
 =head1 VERSION
 
-This describes version B<0.08> of Text::NeatTemplate.
-
-=cut
-
-our $VERSION = '0.08';
+version 0.10
 
 =head1 SYNOPSIS
 
@@ -160,7 +159,139 @@ For example:
 
 will give the value of the I<Money> variable formatted as a dollar value.
 
-See L</convert_value> for details of all the formatting directives.
+Formatting directives are:
+
+=over
+
+=item alpha
+
+Convert to a string containing only alphanumeric characters
+(useful for anchors or filenames)
+
+=item alphadash
+
+Convert to a string containing alphanumeric characters, dashes
+and underscores; spaces are converted to underscores.
+(useful for anchors or filenames)
+
+=item comma_front
+
+Put anything after the last comma at the front (as with an author name)
+For example, "Smith,Sarah Jane" becomes "Sarah Jane Smith".
+
+=item dollars
+
+Return as a dollar value (float of precision 2)
+
+=item email
+
+Convert to a HTML mailto link.
+
+=item float
+
+Convert to float.
+
+=item hmail
+
+Convert to a "humanized" version of the email, with the @ and '.'
+replaced with "at" and "dot".  This is useful to prevent spambots
+harvesting email addresses.
+
+=item html
+
+Convert to simple HTML (simple formatting)
+
+=item int
+
+Convert to integer
+
+=item itemI<num>
+
+Assume that the value is multiple values separated by the "pipe" symbol (|) and
+select the item with an index of I<num> (starting at zero)
+
+=item items_I<directive>
+
+Assume that the value is multiple values separated by the "pipe" symbol (|) and
+split the values into an array, apply the I<directive> directive to them, and
+join them together with a space.
+
+=item itemsjslash_I<directive>
+
+Like items_I<directive>, but the results are joined together with a slash between them.
+
+=item itemslashI<num>
+
+Assume that the value is multiple values separated by the "slash" symbol (/) and
+select the item with an index of I<num> (starting at zero)
+Good for selecting out components of pathnames.
+
+=item lower
+
+Convert to lower case.
+
+=item month
+
+Convert the number value to an English month name.
+
+=item namedalpha
+
+Similar to 'alpha', but prepends the 'name' of the value.
+Assumes that the name is only alphanumeric.
+
+=item nth
+
+Convert the number value to a N-th value.  Numbers ending with 1 have 'st'
+appended, 2 have 'nd' appended, 3 have 'rd' appended, and everything
+else has 'th' appended.
+
+=item percent
+
+Show as if the value is a percentage.
+
+=item pipetocomma
+
+Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
+those with a comma and space.
+
+=item pipetoslash
+
+Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
+those with a forward slash (/).
+
+=item proper
+
+Convert to a Proper Noun.
+
+=item string
+
+Return the value with no change.
+
+=item title
+
+Put any trailing ",The" ",A" or ",An" at the front (as this is a title)
+
+=item truncateI<num>
+
+Truncate to I<num> length.
+
+=item upper
+
+Convert to upper case.
+
+=item url
+
+Convert to a HTML href link.
+
+=item wikilink
+
+Format the value as the most common kind of wikilink, that is [[I<value>]]
+
+=item wordsI<num>
+
+Give the first I<num> words of the value.
+
+=back
 
 =cut
 
@@ -219,6 +350,75 @@ sub fill_in {
     return $out;
 } # fill_in
 
+=head2 get_varnames
+
+Find variable names inside the given template.
+
+    @varnames = $tobj->get_varnames(template=>$text);
+
+=cut
+sub get_varnames {
+    my $self = shift;
+    my %args = (
+	template=>undef,
+	@_
+    );
+    my $template = $args{template};
+
+    return '' if (!$template);
+
+    my %varnames = ();
+    # { (the regex below needs matching)
+    while ($template =~ m/{([^}]+)}/g)
+    {
+	my $targ = $1;
+
+	if ($targ =~ /^\$(\w+[-:\w]*)$/)
+	{
+	    my $val_id = $1;
+	    $varnames{$val_id} = 1;
+	}
+	elsif ($targ =~ /^\?([-\w]+)\s(.*)!!(.*)$/)
+	{
+	    my $val_id = $1;
+	    my $yes_t = $2;
+	    my $no_t = $3;
+
+	    $varnames{$val_id} = 1;
+
+	    foreach my $substr ($yes_t, $no_t)
+	    {
+		while ($substr =~ /\[(\$[^\]]+)\]/)
+		{
+		    $varnames{$1} = 1;
+		}
+	    }
+	}
+	elsif ($targ =~ /^\?([-\w]+)\s(.*)$/)
+	{
+	    my $val_id = $1;
+	    my $yes_t = $2;
+
+	    $varnames{$val_id} = 1;
+	    while ($yes_t =~ /\[(\$[^\]]+)\]/)
+	    {
+		$varnames{$1} = 1;
+	    }
+	}
+	elsif ($targ =~ /^\&([-\w:]+)\((.*)\)$/)
+	{
+	    # function
+	    my $func_name = $1;
+	    my $fargs = $2;
+	    while ($fargs =~ /\[(\$[^\]]+)\]/)
+	    {
+		$varnames{$1} = 1;
+	    }
+	}
+    }
+    return sort keys %varnames;
+} # get_varnames
+
 =head2 do_replace
 
 Replace the given value.
@@ -252,7 +452,7 @@ sub do_replace {
     my $targ = $args{targ};
 
     return '' if (!$targ);
-    if ($targ =~ /^\$(\w+[:\w]*)$/)
+    if ($targ =~ /^\$(\w+[-:\w]*)$/)
     {
 	my $val = $self->get_value(val_id=>$1,
 	    data_hash=>$args{data_hash},
@@ -266,7 +466,7 @@ sub do_replace {
 	    return '';
 	}
     }
-    elsif ($targ =~ /^\?(\w+)\s(.*)!!(.*)$/)
+    elsif ($targ =~ /^\?([-\w]+)\s(.*)!!(.*)$/)
     {
 	my $val_id = $1;
 	my $yes_t = $2;
@@ -285,7 +485,7 @@ sub do_replace {
 	    return $no_t;
 	}
     }
-    elsif ($targ =~ /^\?(\w+)\s(.*)$/)
+    elsif ($targ =~ /^\?([-\w]+)\s(.*)$/)
     {
 	my $val_id = $1;
 	my $yes_t = $2;
@@ -302,7 +502,7 @@ sub do_replace {
 	    return '';
 	}
     }
-    elsif ($targ =~ /^\&([\w:]+)\((.*)\)$/)
+    elsif ($targ =~ /^\&([-\w:]+)\((.*)\)$/)
     {
 	# function
 	my $func_name = $1;
@@ -312,6 +512,10 @@ sub do_replace {
 	    no strict('refs');
 	    return &{$func_name}(split(/,/,$fargs));
 	}
+    }
+    else
+    {
+	print STDERR "UNKNOWN ==$targ==\n";
     }
     return '';
 } # do_replace
@@ -375,98 +579,8 @@ sub get_value {
 
 Convert a value according to the given formatting directive.
 
-Directives are:
+See L</FORMATTING> for details of all the formatting directives.
 
-=over
-
-=item upper
-
-Convert to upper case.
-
-=item lower
-
-Convert to lower case.
-
-=item int
-
-Convert to integer
-
-=item float
-
-Convert to float.
-
-=item string
-
-Return the value with no change.
-
-=item truncateI<num>
-
-Truncate to I<num> length.
-
-=item dollars
-
-Return as a dollar value (float of precision 2)
-
-=item percent
-
-Show as if the value is a percentage.
-
-=item title
-
-Put any trailing ",The" ",A" or ",An" at the front (as this is a title)
-
-=item comma_front
-
-Put anything after the last comma at the front (as with an author name)
-For example, "Smith,Sarah Jane" becomes "Sarah Jane Smith".
-
-=item month
-
-Convert the number value to a month name.
-
-=item nth
-
-Convert the number value to a N-th value.  Numbers ending with 1 have 'st'
-appended, 2 have 'nd' appended, 3 have 'rd' appended, and everything
-else has 'th' appended.
-
-=item url
-
-Convert to a HTML href link.
-
-=item email
-
-Convert to a HTML mailto link.
-
-=item hmail
-
-Convert to a "humanized" version of the email, with the @ and '.'
-replaced with "at" and "dot".  This is useful to prevent spambots
-harvesting email addresses.
-
-=item html
-
-Convert to simple HTML (simple formatting)
-
-=item proper
-
-Convert to a Proper Noun.
-
-=item wordsI<num>
-
-Give the first I<num> words of the value.
-
-=item alpha
-
-Convert to a string containing only alphanumeric characters
-(useful for anchors or filenames)
-
-=item namedalpha
-
-Similar to 'alpha', but prepends the 'name' of the value.
-Assumes that the name is only alphanumeric.
-
-=back
 
 =cut
 sub convert_value {
@@ -493,6 +607,7 @@ sub convert_value {
 		     sprintf('%.1f%%',($value*100))
 		     || sprintf('%d%%',int($value*100))));
 	/^url/i &&    (return "<a href='$value'>$value</a>");
+	/^wikilink/i &&    (return "[[$value]]");
 	/^email/i &&    (return "<a mailto='$value'>$value</a>");
 	/^hmail/i && do {
 	    $value =~ s/@/ at /;
@@ -577,12 +692,61 @@ sub convert_value {
 	    $value = join('', $name, '_', $value);
 	    return $value;
 	};
+	/^alphadash/i && do {
+	    $value =~ s/ /_/g;
+	    $value =~ s/[^a-zA-Z0-9_-]//g;
+	    return $value;
+	};
+	/^pipetocomma/i && do {
+	    $value =~ s/\|/, /g;
+	    return $value;
+	};
+	/^pipetoslash/i && do {
+	    $value =~ s/\|/\//g;
+	    return $value;
+	};
 	/^words(\d+)/ && do {
 	    my $ct = $1;
 	    ($ct>0) || return '';
 	    my @sentence = split(/\s+/, $value);
 	    my (@words) = splice(@sentence,0,$ct);
 	    return join(' ', @words);
+	};
+	/^wlink_(\w+)/ && do {
+	    my $prefix = $1;
+	    return "[[$prefix/$value]]";
+	};
+	/^item(\d+)/ && do {
+	    my $ct = $1;
+	    ($ct>=0) || return '';
+	    my @items = split(/\|/, $value);
+	    return $items[$ct];
+	};
+	/^itemslash(\d+)/ && do {
+	    my $ct = $1;
+	    ($ct>=0) || return '';
+	    my @items = split(/\//, $value);
+	    return $items[$ct];
+	};
+	/^items_(\w+)/ && do {
+	    my $next = $1;
+	    my @items = split(/\|/, $value);
+	    my @next_items = ();
+	    foreach my $item (@items)
+	    {
+		push @next_items, $self->convert_value(%args, value=>$item, format=>$next);
+	    }
+	    return join(' ', @next_items);
+	};
+	/^itemsjslash_(\w+)/ && do {
+	    my $next = $1;
+	    my @items = split(/\|/, $value);
+	    my @next_items = ();
+	    foreach my $item (@items)
+	    {
+		push @next_items, $self->convert_value(%args, value=>$item, format=>$next);
+	    }
+	    return join(' / ', @next_items);
 	};
 
 	# otherwise, give up
