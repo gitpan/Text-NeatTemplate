@@ -20,7 +20,7 @@ my %module_build_args = (
     "Kathryn Andersen <perlkat\@katspace.org>"
   ],
   "dist_name" => "Text-NeatTemplate",
-  "dist_version" => "0.10",
+  "dist_version" => "0.1001",
   "license" => "perl",
   "module_name" => "Text::NeatTemplate",
   "recommends" => {},

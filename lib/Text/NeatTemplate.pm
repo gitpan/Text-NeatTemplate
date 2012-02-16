@@ -1,6 +1,6 @@
 package Text::NeatTemplate;
 {
-  $Text::NeatTemplate::VERSION = '0.10';
+  $Text::NeatTemplate::VERSION = '0.1001';
 }
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ Text::NeatTemplate - a fast, middleweight template engine.
 
 =head1 VERSION
 
-version 0.10
+version 0.1001
 
 =head1 SYNOPSIS
 
@@ -683,18 +683,22 @@ sub convert_value {
 		      )
 		   );
 	};
-	/^alpha/i && do {
-	    $value =~ s/[^a-zA-Z0-9]//g;
-	    return $value;
-	};
 	/^namedalpha/i && do {
 	    $value =~ s/[^a-zA-Z0-9]//g;
 	    $value = join('', $name, '_', $value);
 	    return $value;
 	};
 	/^alphadash/i && do {
+	    $value =~ s!/! !g;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+	    $value =~ s!\s+-\s+!-!g;
 	    $value =~ s/ /_/g;
 	    $value =~ s/[^a-zA-Z0-9_-]//g;
+	    return $value;
+	};
+	/^alpha/i && do {
+	    $value =~ s/[^a-zA-Z0-9]//g;
 	    return $value;
 	};
 	/^pipetocomma/i && do {
@@ -730,7 +734,7 @@ sub convert_value {
 	};
 	/^items_(\w+)/ && do {
 	    my $next = $1;
-	    my @items = split(/\|/, $value);
+	    my @items = split(/[\|,]\s*/, $value);
 	    my @next_items = ();
 	    foreach my $item (@items)
 	    {
@@ -740,7 +744,7 @@ sub convert_value {
 	};
 	/^itemsjslash_(\w+)/ && do {
 	    my $next = $1;
-	    my @items = split(/\|/, $value);
+	    my @items = split(/[\|,]\s*/, $value);
 	    my @next_items = ();
 	    foreach my $item (@items)
 	    {

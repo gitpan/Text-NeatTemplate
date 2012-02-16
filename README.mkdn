@@ -4,7 +4,7 @@ Text::NeatTemplate - a fast, middleweight template engine.
 
 # VERSION
 
-version 0.10
+version 0.1001
 
 # SYNOPSIS
 
