@@ -2,7 +2,7 @@ NAME
     Text::NeatTemplate - a fast, middleweight template engine.
 
 VERSION
-    version 0.1001
+    version 0.11
 
 SYNOPSIS
         use Text::NeatTemplate;
@@ -303,6 +303,11 @@ Callable Functions
     Return the results of a program, without risking evil shell calls. This
     requires that the program and the arguments to that program be given
     separately.
+
+  format_items
+    {&format_items(fieldname,value,delim,outdelim,format,prefix,suffix)}
+
+    Format a field made of multiple items.
 
 REQUIRES
         Test::More

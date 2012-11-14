@@ -4,7 +4,7 @@ Text::NeatTemplate - a fast, middleweight template engine.
 
 # VERSION
 
-version 0.1001
+version 0.11
 
 # SYNOPSIS
 
@@ -28,65 +28,65 @@ The markup format is as follows:
 
 - {$varname}
 
-A variable; will display the value of the variable, or nothing if
-that value is empty.
+    A variable; will display the value of the variable, or nothing if
+    that value is empty.
 
 - {$varname:format}
 
-A formatted variable; will apply the formatting directive(s) to
-the value before displaying it.
+    A formatted variable; will apply the formatting directive(s) to
+    the value before displaying it.
 
-- {?varname stuff [$varname] more stuff}
+- {?varname stuff \[$varname\] more stuff}
 
-A conditional.  If the value of 'varname' is not empty, this will
-display "stuff value-of-variable more stuff"; otherwise it displays
-nothing.
+    A conditional.  If the value of 'varname' is not empty, this will
+    display "stuff value-of-variable more stuff"; otherwise it displays
+    nothing.
 
-    {?var1 stuff [$var1] thing [$var2]}
+        {?var1 stuff [$var1] thing [$var2]}
 
-This would use both the values of var1 and var2 if var1 is not
-empty.
+    This would use both the values of var1 and var2 if var1 is not
+    empty.
 
-- {?varname stuff [$varname] more stuff!!other stuff}
+- {?varname stuff \[$varname\] more stuff!!other stuff}
 
-A conditional with "else".  If the value of 'varname' is not empty, this
-will display "stuff value-of-variable more stuff"; otherwise it displays
-"other stuff".
+    A conditional with "else".  If the value of 'varname' is not empty, this
+    will display "stuff value-of-variable more stuff"; otherwise it displays
+    "other stuff".
 
-This version can likewise use multiple variables in its display parts.
+    This version can likewise use multiple variables in its display parts.
 
-    {?var1 stuff [$var1] thing [$var2]!![$var3]}
+        {?var1 stuff [$var1] thing [$var2]!![$var3]}
 
 - {&funcname(arg1,...,argN)}
 
-Call a function with the given args; the return value of the
-function will be what is put in its place.
+    Call a function with the given args; the return value of the
+    function will be what is put in its place.
 
-    {&MyPackage::myfunc(stuff,[$var1])}
+        {&MyPackage::myfunc(stuff,[$var1])}
 
-This would call the function myfunc in the package MyPackage, with the
-arguments "stuff", and the value of var1.
+    This would call the function myfunc in the package MyPackage, with the
+    arguments "stuff", and the value of var1.
 
-Note, of course, that if you have a more complicated function and
-are processing much data, this will slow things down.
+    Note, of course, that if you have a more complicated function and
+    are processing much data, this will slow things down.
 
 ## Limitations
 
 To make the parsing simpler (and therefore faster) there are certain
 restrictions in what this module can do:
 
-- One cannot escape '{' '}' '[' or ']' characters.  However, the substitution
+- One cannot escape '{' '}' '\[' or '\]' characters.  However, the substitution
 is clever enough so that you may be able to use them inside conditional
 constructs, provided the use does not resemble a variable.
 
-For example, to get a value surrounded by {}, the following
-will not work:
+    For example, to get a value surrounded by {}, the following
+    will not work:
 
-{{$Var1}}
+    {{$Var1}}
 
-However, this will:
+    However, this will:
 
-{?Var1 {[$Var1]}}
+    {?Var1 {\[$Var1\]}}
 
 - One cannot have nested variables.
 - Conditionals are limited to testing whether or not the variable
@@ -138,131 +138,131 @@ Formatting directives are:
 
 - alpha
 
-Convert to a string containing only alphanumeric characters
-(useful for anchors or filenames)
+    Convert to a string containing only alphanumeric characters
+    (useful for anchors or filenames)
 
 - alphadash
 
-Convert to a string containing alphanumeric characters, dashes
-and underscores; spaces are converted to underscores.
-(useful for anchors or filenames)
+    Convert to a string containing alphanumeric characters, dashes
+    and underscores; spaces are converted to underscores.
+    (useful for anchors or filenames)
 
-- comma_front
+- comma\_front
 
-Put anything after the last comma at the front (as with an author name)
-For example, "Smith,Sarah Jane" becomes "Sarah Jane Smith".
+    Put anything after the last comma at the front (as with an author name)
+    For example, "Smith,Sarah Jane" becomes "Sarah Jane Smith".
 
 - dollars
 
-Return as a dollar value (float of precision 2)
+    Return as a dollar value (float of precision 2)
 
 - email
 
-Convert to a HTML mailto link.
+    Convert to a HTML mailto link.
 
 - float
 
-Convert to float.
+    Convert to float.
 
 - hmail
 
-Convert to a "humanized" version of the email, with the @ and '.'
-replaced with "at" and "dot".  This is useful to prevent spambots
-harvesting email addresses.
+    Convert to a "humanized" version of the email, with the @ and '.'
+    replaced with "at" and "dot".  This is useful to prevent spambots
+    harvesting email addresses.
 
 - html
 
-Convert to simple HTML (simple formatting)
+    Convert to simple HTML (simple formatting)
 
 - int
 
-Convert to integer
+    Convert to integer
 
 - item_num_
 
-Assume that the value is multiple values separated by the "pipe" symbol (|) and
-select the item with an index of _num_ (starting at zero)
+    Assume that the value is multiple values separated by the "pipe" symbol (|) and
+    select the item with an index of _num_ (starting at zero)
 
-- items__directive_
+- items\__directive_
 
-Assume that the value is multiple values separated by the "pipe" symbol (|) and
-split the values into an array, apply the _directive_ directive to them, and
-join them together with a space.
+    Assume that the value is multiple values separated by the "pipe" symbol (|) and
+    split the values into an array, apply the _directive_ directive to them, and
+    join them together with a space.
 
-- itemsjslash__directive_
+- itemsjslash\__directive_
 
-Like items__directive_, but the results are joined together with a slash between them.
+    Like items\__directive_, but the results are joined together with a slash between them.
 
 - itemslash_num_
 
-Assume that the value is multiple values separated by the "slash" symbol (/) and
-select the item with an index of _num_ (starting at zero)
-Good for selecting out components of pathnames.
+    Assume that the value is multiple values separated by the "slash" symbol (/) and
+    select the item with an index of _num_ (starting at zero)
+    Good for selecting out components of pathnames.
 
 - lower
 
-Convert to lower case.
+    Convert to lower case.
 
 - month
 
-Convert the number value to an English month name.
+    Convert the number value to an English month name.
 
 - namedalpha
 
-Similar to 'alpha', but prepends the 'name' of the value.
-Assumes that the name is only alphanumeric.
+    Similar to 'alpha', but prepends the 'name' of the value.
+    Assumes that the name is only alphanumeric.
 
 - nth
 
-Convert the number value to a N-th value.  Numbers ending with 1 have 'st'
-appended, 2 have 'nd' appended, 3 have 'rd' appended, and everything
-else has 'th' appended.
+    Convert the number value to a N-th value.  Numbers ending with 1 have 'st'
+    appended, 2 have 'nd' appended, 3 have 'rd' appended, and everything
+    else has 'th' appended.
 
 - percent
 
-Show as if the value is a percentage.
+    Show as if the value is a percentage.
 
 - pipetocomma
 
-Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
-those with a comma and space.
+    Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
+    those with a comma and space.
 
 - pipetoslash
 
-Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
-those with a forward slash (/).
+    Assume that the value is multiple values separated by the "pipe" symbol (|) and replace
+    those with a forward slash (/).
 
 - proper
 
-Convert to a Proper Noun.
+    Convert to a Proper Noun.
 
 - string
 
-Return the value with no change.
+    Return the value with no change.
 
 - title
 
-Put any trailing ",The" ",A" or ",An" at the front (as this is a title)
+    Put any trailing ",The" ",A" or ",An" at the front (as this is a title)
 
 - truncate_num_
 
-Truncate to _num_ length.
+    Truncate to _num_ length.
 
 - upper
 
-Convert to upper case.
+    Convert to upper case.
 
 - url
 
-Convert to a HTML href link.
+    Convert to a HTML href link.
 
 - wikilink
 
-Format the value as the most common kind of wikilink, that is [[_value_]]
+    Format the value as the most common kind of wikilink, that is \[\[_value_\]\]
 
 - words_num_
 
-Give the first _num_ words of the value.
+    Give the first _num_ words of the value.
 
 # CLASS METHODS
 
@@ -274,7 +274,7 @@ Make a new template object.
 
 # METHODS
 
-## fill_in
+## fill\_in
 
 Fill in the given values.
 
@@ -282,22 +282,22 @@ Fill in the given values.
 			     show_names=>\%names,
 			     template=>$text);
 
-The 'data_hash' is a hash containing names and values.
+The 'data\_hash' is a hash containing names and values.
 
-The 'show_names' is a hash saying which of these "variable names"
+The 'show\_names' is a hash saying which of these "variable names"
 ought to be displayed, and which suppressed.  This can be useful
 if you want to use a more generic template, and then dynamically
 suppress certain values at runtime.
 
 The 'template' is the text of the template.
 
-## get_varnames
+## get\_varnames
 
 Find variable names inside the given template.
 
     @varnames = $tobj->get_varnames(template=>$text);
 
-## do_replace
+## do\_replace
 
 Replace the given value.
 
@@ -308,9 +308,9 @@ Replace the given value.
 Where 'targ' is the target value, which is either a variable target,
 or a conditional target.
 
-The 'data_hash' is a hash containing names and values.
+The 'data\_hash' is a hash containing names and values.
 
-The 'show_names' is a hash saying which of these "variable names"
+The 'show\_names' is a hash saying which of these "variable names"
 ought to be displayed, and which suppressed.
 
 This can do templating by using the exec ability of substitution, for
@@ -318,15 +318,15 @@ example:
 
     $out =~ s/{([^}]+)}/$tobj->do_replace(data_hash=>$data_hash,targ=>$1)/eg;
 
-## get_value
+## get\_value
 
-$val = $tobj->get_value(val_id=>$val_id,
-			data_hash=>$data_hashref,
-			show_names=>\%show_names);
+$val = $tobj->get\_value(val\_id=>$val\_id,
+			data\_hash=>$data\_hashref,
+			show\_names=>\\%show\_names);
 
 Get and format the given value.
 
-## convert_value
+## convert\_value
 
     my $val = $tobj->convert_value(value=>$val,
 				   format=>$format,
@@ -334,26 +334,32 @@ Get and format the given value.
 
 Convert a value according to the given formatting directive.
 
-See [FORMATTING](#pod_FORMATTING) for details of all the formatting directives.
+See ["FORMATTING"](#FORMATTING) for details of all the formatting directives.
 
 
 
-## simple_html
+## simple\_html
 
-$val = $tobj->simple_html($val);
+$val = $tobj->simple\_html($val);
 
 Do a simple HTML conversion of the value.
 bold, italic, <br>
 
 # Callable Functions
 
-## safe_backtick
+## safe\_backtick
 
-{&safe_backtick(myprog,arg1,arg2...argN)}
+{&safe\_backtick(myprog,arg1,arg2...argN)}
 
 Return the results of a program, without risking evil shell calls.
 This requires that the program and the arguments to that program
 be given separately.
+
+## format\_items
+
+{&format\_items(fieldname,value,delim,outdelim,format,prefix,suffix)}
+
+Format a field made of multiple items.
 
 # REQUIRES
 
@@ -371,16 +377,16 @@ To install this module, run the following commands:
 Or, if you're on a platform (like DOS or Windows) that doesn't like the
 "./" notation, you can do this:
 
-   perl Build.PL
-   perl Build
-   perl Build test
-   perl Build install
+    perl Build.PL
+    perl Build
+    perl Build test
+    perl Build install
 
 In order to install somewhere other than the default, such as
 in a directory under your home directory, like "/home/fred/perl"
 go
 
-   perl Build.PL --install_base /home/fred/perl
+    perl Build.PL --install_base /home/fred/perl
 
 as the first step instead.
 

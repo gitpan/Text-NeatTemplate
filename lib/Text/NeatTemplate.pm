@@ -1,6 +1,6 @@
 package Text::NeatTemplate;
 {
-  $Text::NeatTemplate::VERSION = '0.1001';
+  $Text::NeatTemplate::VERSION = '0.11';
 }
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ Text::NeatTemplate - a fast, middleweight template engine.
 
 =head1 VERSION
 
-version 0.1001
+version 0.11
 
 =head1 SYNOPSIS
 
@@ -507,10 +507,18 @@ sub do_replace {
 	# function
 	my $func_name = $1;
 	my $fargs = $2;
-	$fargs =~ s/\[(\$[^\]]+)\]/$self->do_replace(data_hash=>$args{data_hash},show_names=>$args{show_names},targ=>$1)/eg;
+        # split the args first, and replace each one separately
+        # just in case the data values have commas
+        my @fargs = split(/,/,$fargs);
+        my @processed = ();
+        foreach my $fa (@fargs)
+        {
+	    $fa =~ s/\[(\$[^\]]+)\]/$self->do_replace(data_hash=>$args{data_hash},show_names=>$args{show_names},targ=>$1)/eg;
+            push @processed, $fa;
+        }
 	{
 	    no strict('refs');
-	    return &{$func_name}(split(/,/,$fargs));
+	    return &{$func_name}(@processed);
 	}
     }
     else
@@ -683,18 +691,28 @@ sub convert_value {
 		      )
 		   );
 	};
+	/^facettag/i && do {
+	    $value =~ s!/! !g;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+	    $value =~ s/[^\w\s:_-]//g;
+	    $value =~ s/\s\s+/ /g;
+	    $value =~ s/ /_/g;
+	    $value = join(':', $name, $value);
+	    return $value;
+	};
 	/^namedalpha/i && do {
 	    $value =~ s/[^a-zA-Z0-9]//g;
-	    $value = join('', $name, '_', $value);
+	    $value = join('_', $name, $value);
 	    return $value;
 	};
 	/^alphadash/i && do {
 	    $value =~ s!/! !g;
+	    $value =~ s/[^a-zA-Z0-9_\s-]//g;
             $value =~ s/^\s+//;
             $value =~ s/\s+$//;
-	    $value =~ s!\s+-\s+!-!g;
+	    $value =~ s/\s\s+/ /g;
 	    $value =~ s/ /_/g;
-	    $value =~ s/[^a-zA-Z0-9_-]//g;
 	    return $value;
 	};
 	/^alpha/i && do {
@@ -719,6 +737,17 @@ sub convert_value {
 	/^wlink_(\w+)/ && do {
 	    my $prefix = $1;
 	    return "[[$prefix/$value]]";
+	};
+	/^tagify/i && do {
+	    $value =~ s/\|/,/g;
+	    $value =~ s!/! !g;
+	    $value =~ s/!/ /g;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+	    $value =~ s/[^\w,\s_-]//g;
+	    $value =~ s/\s\s+/ /g;
+	    $value =~ s/ /_/g;
+	    return $value;
 	};
 	/^item(\d+)/ && do {
 	    my $ct = $1;
@@ -751,6 +780,16 @@ sub convert_value {
 		push @next_items, $self->convert_value(%args, value=>$item, format=>$next);
 	    }
 	    return join(' / ', @next_items);
+	};
+	/^itemsjcomma_(\w+)/ && do {
+	    my $next = $1;
+	    my @items = split(/[\|,]\s*/, $value);
+	    my @next_items = ();
+	    foreach my $item (@items)
+	    {
+		push @next_items, $self->convert_value(%args, value=>$item, format=>$next);
+	    }
+	    return join(',', @next_items);
 	};
 
 	# otherwise, give up
@@ -825,6 +864,51 @@ sub safe_backtick {
     }
     return $result;
 } # safe_backtick
+
+=head2 format_items
+
+{&format_items(fieldname,value,delim,outdelim,format,prefix,suffix)}
+
+Format a field made of multiple items.
+
+=cut
+sub format_items {
+    my $fieldname = shift;
+    my $value = shift;
+    my @args = @_;
+
+    # if they didn't give us anything, return
+    if (!$fieldname)
+    {
+	return '';
+    }
+    if (!$value)
+    {
+	return '';
+    }
+
+    my $delim = $args[0] || '|';
+    my $outdelim = $args[1] || ' ';
+    my $format = $args[2] || 'raw';
+    my $prefix = $args[3] || '';
+    my $suffix = $args[4] || '';
+    $delim =~ s/comma/,/g;
+    $delim =~ s/pipe/|/g;
+    $delim =~ s!slash!/!g;
+    $outdelim =~ s/comma/,/g;
+    $outdelim =~ s/pipe/|/g;
+    $outdelim =~ s!slash!/!g;
+    my @items = split(/\Q$delim\E\s*/, $value);
+    my @next_items = ();
+    foreach my $item (@items)
+    {
+        push @next_items,
+        Text::NeatTemplate->convert_value(name=>$fieldname,
+                                          value=>$item,
+                                          format=>$format);
+    }
+    return $prefix . join($outdelim, @next_items) . $suffix;
+} # format_items
 
 
 =head1 REQUIRES

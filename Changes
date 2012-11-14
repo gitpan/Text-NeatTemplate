@@ -1,6 +1,26 @@
 Revision History for Text-NeatTemplate
 ======================================
 
+v0.11 2012-11-14
+----------------
+
+* 2012-07-04 15:24:39 +1000
+  Merge branch 'develop' of github.com:rubykat/Text-NeatTemplate into develop
+* 2012-07-04 15:21:24 +1000
+  Fixing bug with alphadash
+* 2012-05-15 18:13:53 +1000
+  formatting
+* 2012-05-10 15:08:27 +1000
+  removed namedalphadash format; added facettag instead
+* 2012-05-10 13:25:05 +1000
+  removed namedtagify format; added namedalphadash instead
+* 2012-05-10 13:17:24 +1000
+  added namedtagify format
+* 2012-05-10 13:10:52 +1000
+  added tagify format
+* 2012-02-16 22:48:20 +1100
+  tweaking
+
 v0.1001 2012-02-16
 ------------------
 
@@ -28,12 +48,6 @@ v0.10 2012-02-12
   git ignore generated dist files
 * 2009-12-06 16:17:16 +1100
   added get_varnames method
-* 2007-12-16 09:05:15 +0000
-  revamped depot
-
-v0.08 2009-11-27
-----------------
-
 * 2007-12-16 09:05:15 +0000
   revamped depot
 
